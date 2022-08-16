@@ -7,62 +7,70 @@ app.use(express.json());
 app.use(cors());
 
 const conexao = mysql.createConnection({
-    host: '127.0.0.1',
-    port:'6520',
+    host: '172.17.0.1',
+    port: '6520',
     user: 'root',
     password: '123@senac',
     database: 'bancoloja'
 });
-conexao.connect((erro)=>{
-    if(erro){
-        return console.error(`Não conectou -> ${erro}`);
+conexao.connect((erro) => {
+    if (erro) {
+        return console.error(`não conectou ->  ${erro}`);
     }
-    console.log(`Banco de dados online -> ${conexao.threadID}`);
-});
-
-app.get("/usuarios/listar",(req, res) => {
-    conexao.query("select * from usuarios",(erro,dados) => {
-      if (erro)return res.status(500).send({output:`Erro -> ${erro}`});
-      res.status(200).send({output:dados});  
-    });
-});
-
-app.post("/usuarios/cadastrar",(req, res) => {
-    if(req.body.nomeusuarios=="" || req.body.senha == "" 
-    || req.body.email == "" 
-    || req.body.nomecompleto == "" 
-    || req.body.cpf == "" 
-    ||req.body.foto == ""){
-        return res.status(400).send({output:`você deve digitar todos os dados`});
-    }
-    conexao.query("insert into usuarios set ?",req.body,(error, data)=>{
-        if(erro)return res.status(500).send({output: `Erro ao tentar cadastrar ->  ${erro}`})
-        res.status(201).send({output:`Usuario cadastrado`,dados:data});
-    });
-app.post("/usuarios/login",(req,res)=>{
-    if(req.body.nomeusuarios=="" 
-    || req.body.senha == "" 
-    
-    ){
-        return res.status(400).send({output:`Você deve passar todos os dados`});
-    }
-    conexao.query(`select * from usuarios where nomeusuarios=? and senha=?`,[req.body.nomeusuarios,req.body.senha],
-        (error, data)=>{
-            if(erro)return res.status(500).send({output:`Erro ao tentar logar -> ${erro}`})
-            res.status(200).send({output:`Logado`,dados:data})
-        }
-    )
-});
-});
-
-
-app.put("/usuarios/atualizar/:id",(req, res)=>{
-    conexao.query("update usuario set ? where id=?",[req.body.req.params.id], (error,data)=>{
-        if(error)
-        return res.status(500).send({output:`Erro ao tentar atualizar -> ${erro}`,
-    });
-    res.status(200).send({output:`Atualizar`,dados:data});
-    });
+    console.log(`banco de dados online -> ${conexao.threadId}`);
 })
 
-app.listen("3000",() => console.log("Servidor online"));
+app.get(`/usuarios/listar`, (req, res) => {
+    conexao.query("select * from usuario", (erro, dados) => {
+        if (erro) return res.status(500).send({ output: `erro -> ${erro}` });
+        res.status(200).send({ output: dados })
+    })
+});
+
+app.post("/usuarios/cadastro", (req, res) => {
+    if (
+        req.body.nomeusuario == "" ||
+        req.body.senha == "" ||
+        req.body.email == "" ||
+        req.body.nomecompleto == "" ||
+        req.body.cpf == "" ||
+        req.body.foto == ""
+    ) {
+        return res.status(400).send({ output: "você deve digitar todos os dados" });
+    }
+    conexao.query("insert into usuario set ?", req.body, (error, data) => {
+        if (erro) return res.status(500).send({ output: `erro ao tentar cadastrar: ${erro}` })
+        res.status(201).send({ output: `usuario cadastrado`, dados: data })
+    }
+    )
+})
+
+app.post("/usuarios/login", (req, res) => {
+    if (req.body.usuario == "" ||
+        req.body.senha == "") {
+        return res.status(400).
+            send({ output: `você deve inserir todos os dados` });
+    }
+    conexao.query(
+        "select * from usuario where nomeusuario=? and senha=?",
+        [req.body.nomeusuario, req.body.senha],
+        (error, data) => {
+            if (error) return res.status(500).
+                send({ output: `erro ao tentar logar -> ${error}` })
+            res.status(200).send({ output: `logado`, dados: data });
+        }
+    );
+});
+app.put("/usuarios/atualizar/:id", (req, res) => {
+    conexao.query("update usuario set ? where id = ?", [req.body, req.body.params.id], (error, data) => {
+        if (error)
+            return res.status(500).
+                send({
+                    output: `erro ao tentar atualizar -> ${error}`,
+                });
+        res.status(200).send({ output: `atualizado`, dados: data });
+    })
+})
+
+
+app.listen("3000", () => console.log("Servidor online"))
